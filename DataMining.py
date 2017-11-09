@@ -1,5 +1,3 @@
-#reading in the files, first we need to know how to
-#read a file from the command line.
 import sys
 training_file = sys.argv[1]
 testing_file = sys.argv[2]
