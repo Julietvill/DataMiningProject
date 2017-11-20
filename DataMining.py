@@ -1,12 +1,12 @@
-from collections import defaultdict
-
+import numpy as np
 import sys
 
-def main():
+data_set = []
+feature_list = {}
+
+def download_files():
 	training_file = sys.argv[1]
 	testing_file = sys.argv[2]
-	data_set = []
-	feature_list = {}
 	with open( training_file , "r") as file:
 		data = file.readlines()
 		for line in data:
@@ -21,15 +21,22 @@ def main():
 					feature_list[feature_ID.strip()] += 1
 				else:
 					feature_list.update( {feature_ID.strip() : 1})
+
 	file.close()
+
+def preprocessing():
 	threshold = sum( feature_list.values() )
 	threshold /= len(feature_list)
-'''
-	for users in data_set:
-		for features in users.values():
-			for values in features.values():
-				print( values )
-'''
+	for features,values in feature_list.items():
+		if values < threshold:
+			del feature_list[ features ]
+
+
+def main():
+	download_files()
+	preprocessing()
+	for keys,values in feature_list.items():
+		print(keys, " : ", values )		
 
 main()
 
@@ -45,4 +52,4 @@ for data in data_set:
 		print (x)
 		for y in data[x]:
 			print (y,':',data[x][y])
-'''''
+'''
