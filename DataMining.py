@@ -1,5 +1,6 @@
 from sklearn.svm import LinearSVC
 from sklearn.feature_selection import SelectFromModel
+from sklearn.metrics import accuracy_score
 from sklearn import svm
 import numpy as np
 import sys
@@ -51,8 +52,16 @@ def main():
     clf.fit(data_set_new, class_data)
     results = clf.predict(test_data_new)
 
+    file = open('output.txt', 'w')
     for classifier in results:
-        print(classifier)
+        file.write('%d \n' % classifier)
 
+    file.close()
+
+    
+    testing_results_data = model.transform(data_set)
+    test_results = clf.predict(testing_results_data)
+
+    print(accuracy_score( class_data, test_results))
 
 main()
