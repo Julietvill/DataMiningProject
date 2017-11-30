@@ -1,7 +1,14 @@
 from sklearn.svm import LinearSVC
 from sklearn.feature_selection import SelectFromModel
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn import svm
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import LinearSVC
 import numpy as np
 import sys
 
@@ -27,41 +34,43 @@ def setTestingData(temp, max_column):
 
     return data
 
-def main():
-    training_file = sys.argv[1]
-    classes_file = sys.argv[2]
-    testing_file = sys.argv[3]
 
-    #pull the data from the texts
-    class_data = np.genfromtxt( classes_file )
-    temp = np.genfromtxt(training_file)
-    data_set = setData( temp, temp.max() )
+def getDataSets():
+    training_file = 'training.txt'
+    training_labels_file = 'label_training.txt'
+    testing_file = 'testing.txt'
 
-    # preprocess data through L1 based feature selection
-    lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(data_set, class_data)
-    model = SelectFromModel(lsvc, prefit=True)
-    data_set_new = model.transform(data_set)
-
-    # preprocess testing data
+    class_labels = np.genfromtxt(training_labels_file)
+    temp_training_data = np.genfromtxt(training_file)
+    training_set = setData(temp_training_data, temp_training_data.max())
     temp_test_data = np.genfromtxt(testing_file)
     test_data = setTestingData(temp_test_data, temp_test_data.max())
-    test_data_new = model.transform(test_data)
 
-    # create classifier
-    clf = svm.LinearSVC()
-    clf.fit(data_set_new, class_data)
-    results = clf.predict(test_data_new)
+    return training_set, class_labels, test_data
 
-    file = open('output.txt', 'w')
-    for classifier in results:
-        file.write('%d \n' % classifier)
 
-    file.close()
+def main():
+    # get data sets in numpy array to run scikit algorithms on
+    data_set, data_labels, test_data = getDataSets() 
+    X_train, y_train, X_test, y_test = train_test_split(data_set, data_labels, test_size=0.2)
 
+    # Reduce features based off feature variance. Line below removes features that are 0 in more than 80% of the features
+    sel = VarianceThreshold(threshold=(.5 * (1 - .5)))
+    feature_reduced_data_set = sel.fit_transform(data_set)
+
+    # train various classifiers
+    neigh = KNeighborsClassifier(n_neighbors=50)
+    k_neighbor_scores = cross_val_score(neigh, feature_reduced_data_set, data_labels, cv=5)
+    ann = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+    ann_scores = cross_val_score(ann, feature_reduced_data_set, data_labels, cv=5)
+    svm = LinearSVC()
+    svm_scores = cross_val_score(svm, feature_reduced_data_set, data_labels, cv=5)
+
+    # print accuracy Score of KNeighbor
+    print("K_N Accuracy: %0.2f (+/- %0.2f)" % (k_neighbor_scores.mean(), k_neighbor_scores.std() * 2))
+    print("ANN Accuracy: %0.2f (+/- %0.2f)" % (ann_scores.mean(), ann_scores.std() * 2))
+    print("SVM Accuracy Score: %0.2f (+/- %0.2f)" % (svm_scores.mean(), svm_scores.std() * 2))
     
-    testing_results_data = model.transform(data_set)
-    test_results = clf.predict(testing_results_data)
 
-    print(accuracy_score( class_data, test_results))
-
-main()
+if __name__ == '__main__':
+    main()
