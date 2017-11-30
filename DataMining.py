@@ -55,8 +55,9 @@ def main():
     X_train, y_train, X_test, y_test = train_test_split(data_set, data_labels, test_size=0.2)
 
     # Reduce features based off feature variance. Line below removes features that are 0 in more than 80% of the features
-    sel = VarianceThreshold(threshold=(.5 * (1 - .5)))
+    sel = VarianceThreshold(threshold=(.01))
     feature_reduced_data_set = sel.fit_transform(data_set)
+    print(feature_reduced_data_set.shape)
 
     # train various classifiers
     neigh = KNeighborsClassifier(n_neighbors=50)
