@@ -48,9 +48,9 @@ def reduce_test_data(indexes_to_keep, test_data):
 
 
 def getDataSets():
-    training_file = 'training.txt'
-    training_labels_file = 'label_training.txt'
-    testing_file = 'testing.txt'
+    training_file = 'DataFiles/training.txt'
+    training_labels_file = 'DataFiles/label_training.txt'
+    testing_file = 'DataFiles/testing.txt'
 
     class_labels = np.genfromtxt(training_labels_file)
     temp_training_data = np.genfromtxt(training_file)
